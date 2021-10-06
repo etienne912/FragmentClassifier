@@ -18,4 +18,6 @@ for d in */; do
   fi
 done
 
+find . -name "*.pdf" -not -path "./PDF/*" -delete
+find . -name "*.html" -not -path "./HTML/*" -delete
 find . -type d -empty -delete
