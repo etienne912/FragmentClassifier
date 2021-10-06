@@ -1,7 +1,6 @@
 import os
 import sys
 import cv2
-
 import numpy
 
 if __name__ == '__main__':
@@ -24,6 +23,5 @@ if __name__ == '__main__':
 			cv2.imwrite(path + str(i) + '.jpg', grayImage)
 
 			data = file.read(4096)
-
 	finally:
 		file.close()
