@@ -15,8 +15,9 @@ fragments_types = dict(
 	{'txt': 0, 'ppt': 0, 'pdf': 0, 'doc': 0, 'jpg': 0, 'gz': 0, 'html': 0, 'ps': 0, 'xls': 0, 'unk': 0})
 fragments_types_colors = dict(
 	{'txt': (255, 255, 255), 'ppt': (128, 128, 128), 'pdf': (0, 0, 255), 'doc': (255, 0, 0),
-	 'jpg': (255, 255, 0), 'gz': (0, 255, 0), 'html': (0, 255, 255), 'ps': (128, 0, 0), 'xls': (0, 0, 128),
+	 'jpg': (0, 255, 255), 'gz': (0, 255, 0), 'html': (255, 255, 0), 'ps': (128, 0, 0), 'xls': (0, 0, 128),
 	 'unk': (255, 0, 255)})
+
 
 # txt: White
 # ppt: Gray
@@ -59,7 +60,7 @@ class Net(nn.Module):
 
 if __name__ == '__main__':
 	input_path = sys.argv[1]
-	return_path = sys.argv[2]
+	output_name = sys.argv[2]
 	try:
 
 		device = ("cuda" if torch.cuda.is_available() else "cpu")
@@ -84,6 +85,10 @@ if __name__ == '__main__':
 			data = file.read(4096)
 			for i in range(nb_images):
 				flatNumpyArray = numpy.array(bytearray(data))
+				if flatNumpyArray.argmax() == 0:
+					prediction_list.append(None)
+					data = file.read(4096)
+					continue
 				grayImage = flatNumpyArray.reshape(64, 64)
 				transform = transforms.Compose(
 					[transforms.ToTensor()])
@@ -95,23 +100,38 @@ if __name__ == '__main__':
 				data = file.read(4096)
 
 			for i in range(len(prediction_list)):
-				previous = prediction_list[i] if i > 1 else [0]*len(files_types)
 				current = prediction_list[i]
-				next = prediction_list[i] if i < len(prediction_list) else [0]*len(files_types)
+				if current is None:
+					list_color_fragments_types.append((0, 0, 0))
+					continue
 
-				proceed = np.add(previous, np.add(current, next))
+				predicted_class = np.argmax(current)
+				if current[0][predicted_class] < 0.8:
+					previous = prediction_list[i] if i > 1 else [0] * len(files_types)
+					next = prediction_list[i] if i < len(prediction_list) else [0] * len(files_types)
+					previous[0] = previous[0] * 0.75
+					next[0] = next[0] * 0.75
 
-				predicted_class = np.argmax(proceed)
-				if proceed[0][predicted_class] > 1.8:
+					proceed = np.add(previous, np.add(current, next))
+					predicted_class = np.argmax(proceed)
+
+					if proceed[0][predicted_class] > 1.2:
+						fragments_types[files_types[predicted_class]] += 1
+						list_fragments_types.append(files_types[predicted_class])
+						list_color_fragments_types.append(fragments_types_colors[files_types[predicted_class]])
+					else:
+						fragments_types["unk"] += 1
+						list_color_fragments_types.append(fragments_types_colors['unk'])
+						list_fragments_types.append("unk")
+				else:
 					fragments_types[files_types[predicted_class]] += 1
 					list_fragments_types.append(files_types[predicted_class])
 					list_color_fragments_types.append(fragments_types_colors[files_types[predicted_class]])
-				else:
-					fragments_types["unk"] += 1
-					list_color_fragments_types.append(fragments_types_colors['unk'])
-					list_fragments_types.append("unk")
 
-			with open(return_path + '.txt', 'w+') as f:
+			if not os.path.exists('output'):
+				os.makedirs('output')
+
+			with open('output/' + output_name + '.txt', 'w+') as f:
 				for item, value in fragments_types.items():
 					f.write("%s | %s\n" % (item, value))
 
@@ -121,7 +141,7 @@ if __name__ == '__main__':
 
 			flatNumpyArray = numpy.array(list_color_fragments_types)
 			grayImage = flatNumpyArray.reshape((size, size, 3))
-			cv2.imwrite(return_path + '.png', grayImage, [int(cv2.IMWRITE_PNG_COMPRESSION), 0])
+			cv2.imwrite('output/' + output_name + '.png', grayImage, [int(cv2.IMWRITE_PNG_COMPRESSION), 0])
 
 	finally:
 		file.close()

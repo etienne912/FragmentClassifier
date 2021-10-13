@@ -15,7 +15,7 @@ fragments_types = dict(
 	{'txt': 0, 'ppt': 0, 'pdf': 0, 'doc': 0, 'jpg': 0, 'gz': 0, 'html': 0, 'ps': 0, 'xls': 0, 'unk': 0})
 fragments_types_colors = dict(
 	{'txt': (255, 255, 255), 'ppt': (128, 128, 128), 'pdf': (0, 0, 255), 'doc': (255, 0, 0),
-	 'jpg': (255, 255, 0), 'gz': (0, 255, 0), 'html': (0, 255, 255), 'ps': (128, 0, 0), 'xls': (0, 0, 128),
+	 'jpg': (0, 255, 255), 'gz': (0, 255, 0), 'html': (255, 255, 0), 'ps': (128, 0, 0), 'xls': (0, 0, 128),
 	 'unk': (255, 0, 255)})
 
 # txt: White
@@ -59,7 +59,7 @@ class Net(nn.Module):
 
 if __name__ == '__main__':
 	input_path = sys.argv[1]
-	return_path = sys.argv[2]
+	output_name = sys.argv[2]
 	try:
 
 		device = ("cuda" if torch.cuda.is_available() else "cpu")
@@ -83,6 +83,11 @@ if __name__ == '__main__':
 			data = file.read(4096)
 			for i in range(nb_images):
 				flatNumpyArray = numpy.array(bytearray(data))
+				if flatNumpyArray.argmax() == 0:
+					list_color_fragments_types.append((0, 0, 0))
+					data = file.read(4096)
+					continue
+
 				grayImage = flatNumpyArray.reshape(64, 64)
 				transform = transforms.Compose(
 					[transforms.ToTensor()])
@@ -103,7 +108,10 @@ if __name__ == '__main__':
 
 				data = file.read(4096)
 
-			with open(return_path + '.txt', 'w+') as f:
+			if not os.path.exists('output'):
+				os.makedirs('output')
+
+			with open('output/' + output_name + '.txt', 'w+') as f:
 				for item, value in fragments_types.items():
 					f.write("%s | %s\n" % (item, value))
 
@@ -113,7 +121,7 @@ if __name__ == '__main__':
 
 			flatNumpyArray = numpy.array(list_color_fragments_types)
 			grayImage = flatNumpyArray.reshape((size, size, 3))
-			cv2.imwrite(return_path + '.png', grayImage, [int(cv2.IMWRITE_PNG_COMPRESSION), 0])
+			cv2.imwrite('output/' + output_name + '.png', grayImage, [int(cv2.IMWRITE_PNG_COMPRESSION), 0])
 
 	finally:
 		file.close()
