@@ -46,7 +46,7 @@ fragments_types_colors = dict(
 # Upload files
 @app.route('/analyse', methods=['POST'])
 def upload():
-	smooth = request.args.get('smooth', default=False, type=bool)
+	smooth = 'smooth' in request.args
 
 	chunk_size = 4096
 	prediction_list = []
@@ -126,6 +126,8 @@ def upload():
 	with zipfile.ZipFile(mem_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
 		zf.writestr("result.txt", result.getvalue())
 		zf.writestr("visu.png", img.getvalue())
+
+	mem_zip.seek(0)
 
 	return send_file(
 		mem_zip,
