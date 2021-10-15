@@ -1,3 +1,4 @@
+import math
 import os
 import sys
 
@@ -8,14 +9,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.transforms import transforms
-import math
 
 files_types = ['txt', 'ppt', 'pdf', 'doc', 'jpg', 'gz', 'html', 'ps', 'xls']
 fragments_types = dict(
 	{'txt': 0, 'ppt': 0, 'pdf': 0, 'doc': 0, 'jpg': 0, 'gz': 0, 'html': 0, 'ps': 0, 'xls': 0, 'unk': 0})
 fragments_types_colors = dict(
 	{'txt': (255, 255, 255), 'ppt': (128, 128, 128), 'pdf': (0, 0, 255), 'doc': (255, 0, 0),
-	 'jpg': (0, 255, 255), 'gz': (0, 255, 0), 'html': (255, 255, 0), 'ps': (128, 0, 0), 'xls': (0, 0, 128),
+	 'jpg': (0, 255, 255), 'gz': (0, 0, 128), 'html': (255, 255, 0), 'ps': (128, 0, 0), 'xls': (0, 255, 0),
 	 'unk': (255, 0, 255)})
 
 
@@ -24,10 +24,10 @@ fragments_types_colors = dict(
 # pdf: Red
 # doc: Blue
 # jpg: Yellow
-# gz: Lime
+# gz: Maroon
 # html: Cyan
-# ps: Maroon
-# xls: Navy
+# ps: Navy
+# xls: Lime
 # unk: Magenta
 
 
