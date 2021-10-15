@@ -132,8 +132,10 @@ if __name__ == '__main__':
 				os.makedirs('output')
 
 			with open('output/' + output_name + '.txt', 'w+') as f:
+				f.write("File type | Number of fragments | Total size (KB)\n")
+				f.write("-------------------------------------------------\n")
 				for item, value in fragments_types.items():
-					f.write("%s | %s\n" % (item, value))
+					f.write("%s | %s | %s\n" % (item, value, math.floor(value * 4.096)))
 
 			size = math.ceil(math.sqrt(nb_images))
 			for i in range((size * size) - nb_images):

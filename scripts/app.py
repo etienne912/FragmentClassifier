@@ -108,7 +108,10 @@ def upload():
 	if not os.path.exists('output'):
 		os.makedirs('output')
 
-	result = io.StringIO(str.join('', [("%s | %s\n" % (item, value)) for item, value in fragments_types.items()]))
+	txt = "File type | Number of fragments | Total size (KB)\n"
+	txt += "-------------------------------------------------\n"
+	txt += str.join('', [("%s | %s | %s\n" % (item, value, math.floor(value * 4.096))) for item, value in fragments_types.items()])
+	result = io.StringIO(txt)
 
 	size = math.ceil(math.sqrt(len(list_color_fragments_types)))
 	for i in range((size * size) - len(list_color_fragments_types)):
