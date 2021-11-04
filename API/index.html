@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Analyse your dd file</title>
+</head>
+<body>
+<script type="application/javascript">
+    function upload_file() {
+        let file = document.getElementById("file").files[0];
+        if (!file) return;
+        let formData = new FormData();
+        formData.append("file", file);
+
+        const smooth = document.getElementById("smooth").checked;
+
+        const URL = smooth ? '/analyse?smooth' : '/analyse';
+        window.fetch(URL, {method: "POST", body: formData})
+            .then(
+                data => (
+                    data.blob()
+                )
+            )
+            .then(
+                response => {
+                    console.log(response);
+                    const dataType = response.type;
+                    const binaryData = [];
+                    binaryData.push(response);
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = window.URL.createObjectURL(new Blob(binaryData, {type: dataType}));
+                    downloadLink.setAttribute('download', 'report.zip');
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    downloadLink.remove();
+                }
+            )
+            .catch(console.error)
+    }
+</script>
+
+<div>
+    <label for="file">Choose file to upload</label>
+    <input type="file" id="file" name="file">
+</div>
+<div>
+    <label for="smooth">Smooth the result?</label>
+    <input type="checkbox" id="smooth" name="smooth">
+</div>
+<div>
+    <button onclick='upload_file()'>Submit</button>
+</div>
+</body>
+</html>
